@@ -1,0 +1,59 @@
+name: Generate LivingDoc and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "features/**"
+      - ".github/workflows/generate-and-deploy.yml"
+  # 手動実行も可能に
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # LivingDocのDockerイメージをビルド
+      - name: Build LivingDoc Docker Image
+        run: |
+          cd docker/livingdoc
+          docker build -t livingdoc-generator .
+
+      # HTMLを生成
+      - name: Generate HTML Documentation
+        run: |
+          mkdir -p html-output
+          docker run --rm \
+            -v ${{ github.workspace }}/features:/app/features:ro \
+            -v ${{ github.workspace }}/html-output:/app/html-output \
+            livingdoc-generator \
+            livingdoc feature-folder /app/features \
+            --output /app/html-output \
+            --title "BDD Living Documentation"
+
+      # GitHub Pagesデプロイ用の設定
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      # GitHub Pagesにアップロード
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: "html-output"
+
+      # GitHub Pagesにデプロイ
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
