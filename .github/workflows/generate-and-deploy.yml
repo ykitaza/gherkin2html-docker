@@ -45,13 +45,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
-      # 明示的にupload-artifactを追加（依存関係のため）
-      - name: Setup upload-artifact
-        uses: actions/upload-artifact@v3
-
-      # GitHub Pagesにアップロード（バージョンを更新）
+      # GitHub Pagesにアップロード
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "html-output"
 
