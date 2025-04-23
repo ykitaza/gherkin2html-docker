@@ -1,0 +1,102 @@
+# # docker-compose.yml
+
+# version: '3.8'
+
+# services:
+#   livingdoc-generator:
+#     # Docker イメージのビルド設定
+#     build:
+#       # Dockerfile が存在するディレクトリのパスを指定
+#       context: ./docker/livingdoc
+#       # 使用する Dockerfile の名前
+#       dockerfile: Dockerfile
+
+#     # ボリューム (ディレクトリ) のマッピング設定
+#     # ローカルのディレクトリをコンテナ内のディレクトリに接続します
+#     volumes:
+#       # ローカルの './features' ディレクトリをコンテナ内の '/app/features' にマウント
+#       # ここに変換したい .feature ファイルを入れてください
+#       - ./features:/app/features:ro # :ro をつけると読み取り専用でマウント（推奨）
+
+#       # ローカルの './html-output' ディレクトリをコンテナ内の '/app/html-output' にマウント
+#       # 生成された HTML ファイルがここに保存されます
+#       - ./html-output:/app/html-output
+
+#     # コンテナ起動時に実行するコマンド
+#     # SpecFlow+ LivingDoc CLI の 'feature-folder' コマンドを使用します
+#     command: >
+#       livingdoc feature-folder /app/features
+#       --output /app/html-output
+#       --title "My Project Living Documentation"
+
+#     # オプション: 生成されるファイルの所有者をホストのユーザーに合わせる場合
+#     # Linux/macOS 環境では、以下のコメントを解除して、UID/GIDを環境変数から取得すると便利です
+#     # user: "${UID:-1000}:${GID:-1000}"
+
+#     # コンテナがコマンド実行後に自動で終了するように設定
+#     restart: "no"
+
+
+
+services:
+  livingdoc-generator:
+    # Docker イメージのビルド設定
+    build:
+      # Dockerfile が存在するディレクトリのパスを指定
+      context: ./docker/livingdoc
+      # 使用する Dockerfile の名前
+      dockerfile: Dockerfile
+
+    # ボリューム (ディレクトリ) のマッピング設定
+    # ローカルのディレクトリをコンテナ内のディレクトリに接続します
+    volumes:
+      # ローカルの './features' ディレクトリをコンテナ内の '/app/features' にマウント
+      # ここに変換したい .feature ファイルを入れてください
+      - ./features:/app/features:ro # :ro をつけると読み取り専用でマウント（推奨）
+
+      # ローカルの './html-output' ディレクトリをコンテナ内の '/app/html-output' にマウント
+      # 生成された HTML ファイルがここに保存されます
+      - ./html-output:/app/html-output
+
+    # コンテナ起動時に実行するコマンド
+    # SpecFlow+ LivingDoc CLI の 'feature-folder' コマンドを使用します
+    command: >
+      livingdoc feature-folder /app/features
+      --output /app/html-output
+      --title "My Project Living Documentation"
+
+    # オプション: 生成されるファイルの所有者をホストのユーザーに合わせる場合
+    # Linux/macOS 環境では、以下のコメントを解除して、UID/GIDを環境変数から取得すると便利です
+    # user: "${UID:-1000}:${GID:-1000}"
+
+    # コンテナがコマンド実行後に自動で終了するように設定
+    restart: "no"
+  pickles-generator:
+    # Define how to build the Docker image for this service
+    build:
+      context: ./docker/pickles     # Look for the Dockerfile in ./docker/pickles directory
+      dockerfile: Dockerfile       # The name of the Dockerfile
+
+    # Define volume mappings
+    volumes:
+      # Mount local features directory (read-only)
+      - ./features:/app/features:ro
+      # Mount local output directory
+      - ./pickles-output:/app/docs # 出力先ディレクトリ名を変更 (例: pickles-output)
+
+    # Command to execute when the container starts
+    # Use Pickles.CommandLine options
+
+    command:
+      - pickles                         # 実行するコマンド
+      - --feature-directory             # オプション名
+      - /app/features                   # オプションの値
+      - --output-directory              # オプション名
+      - /app/docs                       # オプションの値
+      - --documentation-format          # オプション名
+      - dhtml                            # オプションの値 
+    # Optional: Specify the user (useful for Linux/macOS hosts)
+    # user: "${UID:-1000}:${GID:-1000}"
+
+    # Ensure the container exits after the command completes
+    restart: "no"
