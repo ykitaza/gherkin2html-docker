@@ -2,10 +2,13 @@ name: Generate LivingDoc and Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "features/**"
-      - ".github/workflows/generate-and-deploy.yml"
+    branches:
+      - main
+      - master # masterブランチも追加
+    # paths制限を一時的に削除
+    # paths:
+    #  - "features/**"
+    #  - ".github/workflows/generate-and-deploy.yml"
   # 手動実行も可能に
   workflow_dispatch:
 
