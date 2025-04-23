@@ -13,8 +13,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  # ジョブIDを明示的に設定
+  build:
     runs-on: ubuntu-latest
+    name: Build HTML Documentation
 
     steps:
       - name: Checkout
@@ -41,22 +43,34 @@ jobs:
             --output /app/html-output \
             --title "BDD Living Documentation"
 
+      # GitHub Pagesにアップロード
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "html-output"
+
+  # デプロイジョブを分離
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy to GitHub Pages
+
+    # GitHub Pagesのための環境設定
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
       # GitHub Pagesデプロイ用の設定
       - name: Setup Pages
         uses: actions/configure-pages@v3
         with:
           enablement: true # GitHub Pagesを明示的に有効化
 
-      # GitHub Pagesにアップロード
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "html-output"
-
-      # GitHub Pagesにデプロイ
+      # GitHub Pagesにデプロイ（バージョン更新）
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v3
 
 permissions:
   contents: read
