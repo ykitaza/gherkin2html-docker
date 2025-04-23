@@ -43,11 +43,18 @@ jobs:
             --output /app/html-output \
             --title "BDD Living Documentation"
 
-      # GitHub Pagesにアップロード
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+      # 代替方法: artifactのアップロードをスクリプトで直接実行
+      - name: Archive production artifacts
+        run: |
+          tar -czvf artifact.tar.gz html-output/
+
+      # GitHub Actionsの組み込み機能を使ってartifactを保存
+      - name: Store artifact
+        uses: actions/upload-artifact@v2
         with:
-          path: "html-output"
+          name: github-pages
+          path: artifact.tar.gz
+          retention-days: 1
 
   # デプロイジョブを分離
   deploy:
@@ -67,9 +74,19 @@ jobs:
         with:
           enablement: true # GitHub Pagesを明示的に有効化
 
-      # GitHub Pagesにデプロイ（バージョン更新）
-      - name: Deploy to GitHub Pages
-        id: deployment
+      # アーティファクトをダウンロード
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: github-pages
+
+      # 解凍
+      - name: Extract artifact
+        run: |
+          tar -xzvf artifact.tar.gz
+
+      # 手動でアップロード
+      - name: Upload to GitHub Pages
         uses: actions/deploy-pages@v3
 
 permissions:
